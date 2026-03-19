@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Guía técnica de prueba de promoción A1 a A2</title>
+  <meta name="description" content="Guía técnica para construir una prueba de promoción de inglés A1 a A2 para estudiantes de 12 años." />
+  <style>
+:root {
+  --bg: #f5f7fb;
+  --paper: #ffffff;
+  --text: #1f2937;
+  --muted: #5b6472;
+  --accent: #0f766e;
+  --accent-2: #0b3b66;
+  --line: #d8e0ea;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: linear-gradient(180deg, #eef4fb 0%, var(--bg) 100%);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.58;
+}
+.wrapper {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 32px 20px 56px;
+}
+.paper {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 14px 38px rgba(15, 23, 42, 0.08);
+  padding: 42px 54px;
+}
+.meta {
+  font-size: 0.92rem;
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+h1, h2, h3, h4 {
+  color: var(--accent-2);
+  line-height: 1.25;
+}
+h1 {
+  font-size: 2rem;
+  margin: 0 0 8px;
+}
+h2 {
+  font-size: 1.35rem;
+  margin-top: 2rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid #edf2f7;
+}
+h3 {
+  font-size: 1.12rem;
+  margin-top: 1.3rem;
+}
+p { margin: 0.8rem 0; }
+ul, ol { margin: 0.7rem 0 1rem 1.4rem; }
+li { margin: 0.32rem 0; }
+strong { color: #0f172a; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+blockquote {
+  margin: 1.2rem 0;
+  padding: 0.85rem 1rem;
+  border-left: 4px solid var(--accent);
+  background: #f7fbfb;
+  color: #334155;
+}
+hr {
+  border: 0;
+  height: 1px;
+  background: var(--line);
+  margin: 1.5rem 0;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.1rem 0 1.5rem;
+  font-size: 0.95rem;
+  display: table;
+}
+caption {
+  text-align: left;
+  font-weight: 700;
+  margin-bottom: 0.55rem;
+}
+th, td {
+  border: 1px solid var(--line);
+  padding: 10px 12px;
+  vertical-align: top;
+}
+th {
+  background: #eff6ff;
+  color: #163b63;
+  text-align: left;
+}
+code {
+  background: #f3f4f6;
+  padding: 0.1rem 0.32rem;
+  border-radius: 4px;
+}
+.footer-note {
+  margin-top: 28px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+@media (max-width: 720px) {
+  .wrapper { padding: 14px; }
+  .paper { padding: 24px 18px; border-radius: 12px; }
+  h1 { font-size: 1.55rem; }
+  h2 { font-size: 1.18rem; }
+  table { display: block; overflow-x: auto; }
+}
+@media print {
+  body { background: #fff; }
+  .wrapper { max-width: none; padding: 0; }
+  .paper {
+    border: 0; box-shadow: none; border-radius: 0; padding: 0;
+  }
+  a { color: inherit; text-decoration: none; }
+}
+</style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="paper">
+      <div class="meta">HTML standalone listo para compartir</div>
+      
+<table>
+<colgroup>
+<col style="width: 100%"/>
+</colgroup>
+<thead>
+<tr class="header">
+<th><p><strong><br/>
+GUÍA TÉCNICA PARA CONSTRUIR UNA<br/>
+PRUEBA DE PROMOCIÓN DE INGLÉS<br/>
+A1 → A2<br/>
+</strong></p>
+<p>Documento marco para estudiantes de 12 años<br/>
+alineado al MCER/CEFR y modelado con la lógica operacional de Cambridge
+A2 Key for Schools</p>
+<p>Incluye: propósito, blueprint, tiempos, tareas, rúbricas, criterios
+de aprobación,<br/>
+estandarización, administración y formato de reporte</p>
+<p>Versión preparada en español</p></th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<p>Uso recomendado: examen interno de fin de ciclo o de promoción
+escolar. El documento no replica ítems oficiales; describe la estructura
+y los estándares con base en fuentes internacionales.</p>
+<table>
+<colgroup>
+<col style="width: 50%"/>
+<col style="width: 50%"/>
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Perfil objetivo</strong></th>
+<th>Alumnos de 12 años actualmente en A1 que deben demostrar evidencia
+suficiente para desempeñarse en A2.</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Modelo de referencia</strong></td>
+<td>CEFR/MCER + Cambridge A2 Key for Schools (estructura de 3 papers y
+evaluación de las cuatro destrezas).</td>
+</tr>
+</tbody>
+</table>
+<h1 id="propósito-y-alcance">1. Propósito y alcance</h1>
+<p>Esta guía describe cómo debe construirse una prueba de promoción de
+inglés para decidir si un alumno de 12 años puede avanzar de A1 a A2. La
+meta no es imitar un examen internacional palabra por palabra, sino
+diseñar una prueba interna con el mismo principio de validez: recoger
+evidencia observable de desempeño en comprensión lectora, comprensión
+auditiva, producción escrita y producción/interacción oral.</p>
+<p>La recomendación central es usar como referencia operacional el
+examen A2 Key for Schools, porque está pensado para población escolar y
+porque su formato cubre las cuatro destrezas con tareas apropiadas para
+esta edad. El constructo —lo que la prueba pretende medir— debe venir
+del CEFR/MCER; el formato de tareas, tiempos y la lógica de
+administración pueden modelarse con Cambridge A2 Key for Schools.</p>
+<table>
+<colgroup>
+<col style="width: 100%"/>
+</colgroup>
+<thead>
+<tr class="header">
+<th><p><strong>Resumen ejecutivo</strong></p>
+<p>• El examen recomendado tiene 3 papers: Reading &amp; Writing (60
+min), Listening (aprox. 30 min) y Speaking (8–10 min por pareja).</p>
+<p>• La decisión de promoción no debe basarse solo en un promedio
+global: conviene fijar mínimos por destreza, especialmente en writing y
+speaking.</p>
+<p>• Las tareas deben ser apropiadas para 12 años: temas cotidianos,
+instrucciones claras, lenguaje frecuente y ausencia de carga cultural
+innecesaria.</p>
+<p>• Antes de usar el examen como filtro de promoción, la escuela debe
+hacer revisión técnica, pilotaje corto y estandarización de
+correctores.</p></th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h1 id="base-normativa-internacional">2. Base normativa
+internacional</h1>
+<p>La prueba debe apoyarse en tres capas de referencia:</p>
+<p>• MCER/CEFR: define el nivel A2 con descriptores de desempeño (“can
+do”) para recepción, producción e interacción.</p>
+<p>• Council of Europe – Relating Language Examinations to the CEFR:
+exige procedimientos transparentes y prácticos para vincular un examen a
+un nivel.</p>
+<p>• Cambridge A2 Key for Schools: aporta un referente operacional ya
+validado para alumnado escolar de nivel A2.</p>
+<p>En otras palabras: el CEFR dice qué significa estar en A2; Cambridge
+muestra una manera estable y ampliamente reconocida de obtener evidencia
+de ese nivel.</p>
+<h1 id="perfil-de-salida-a2-para-el-alumno-de-12-años">3. Perfil de
+salida A2 para el alumno de 12 años</h1>
+<p>Los siguientes descriptores están <em>parafraseados</em> a partir del
+CEFR y adaptados al contexto escolar. Se usan como objetivos de
+evidencia, no como frases de examen.</p>
+<table>
+<colgroup>
+<col style="width: 33%"/>
+<col style="width: 33%"/>
+<col style="width: 33%"/>
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Destreza</strong></th>
+<th><strong>Qué debe poder hacer un alumno en A2</strong></th>
+<th><strong>Ejemplos de evidencia en la prueba</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Listening</td>
+<td>Comprende expresiones y mensajes breves sobre asuntos cotidianos
+cuando el habla es clara y razonablemente lenta.</td>
+<td>Identifica información principal y detalles concretos en diálogos
+escolares, avisos, planes, horarios y preferencias.</td>
+</tr>
+<tr class="even">
+<td>Reading</td>
+<td>Comprende textos cortos y simples; localiza información específica y
+entiende el propósito principal de mensajes cotidianos.</td>
+<td>Resuelve tareas con letreros, correos, notas, textos informativos
+breves y un texto más largo de dificultad A2.</td>
+</tr>
+<tr class="odd">
+<td>Speaking – interacción</td>
+<td>Participa en intercambios simples sobre temas conocidos; hace y
+responde preguntas sobre familia, escuela, tiempo libre y rutinas.</td>
+<td>Entrevista breve + conversación guiada donde pregunta, responde,
+compara opciones y justifica con frases simples.</td>
+</tr>
+<tr class="even">
+<td>Speaking – producción</td>
+<td>Describe con frases simples personas, lugares, actividades y
+experiencias cercanas.</td>
+<td>Produce turnos cortos comprensibles con vocabulario frecuente y
+conectores básicos.</td>
+</tr>
+<tr class="odd">
+<td>Writing</td>
+<td>Escribe notas, mensajes y textos breves conectados sobre temas
+familiares usando vocabulario cotidiano y gramática simple.</td>
+<td>Redacta un email/nota guiada y una mini-historia o descripción con
+secuencia básica.</td>
+</tr>
+</tbody>
+</table>
+<h1 id="principios-de-diseño-que-no-se-deben-negociar">4. Principios de
+diseño que no se deben negociar</h1>
+<p><strong>Validez:</strong> Cada tarea debe pedir exactamente la
+habilidad que se desea medir. Evite tareas que solo midan memoria del
+libro o conocimientos de gramática descontextualizados.</p>
+<p><strong>Cobertura del constructo:</strong> La prueba debe cubrir las
+cuatro destrezas. Un alumno no debería promocionar a A2 sin evidencia
+mínima en writing y speaking.</p>
+<p><strong>Adecuación a la edad:</strong> Los temas y las instrucciones
+deben ser apropiados para 12 años: escuela, amigos, familia,
+actividades, ciudad, compras, comida, tiempo libre, celebraciones,
+transporte.</p>
+<p><strong>Fiabilidad:</strong> Los criterios de corrección deben estar
+definidos antes de aplicar la prueba; writing y speaking necesitan
+rúbricas claras y, de ser posible, doble corrección en casos límite.</p>
+<p><strong>Autenticidad:</strong> Los textos y audios deben parecer
+reales: anuncios, mensajes, notas, correos, pequeños artículos,
+conversaciones breves.</p>
+<p><strong>Equidad:</strong> No introducir conocimiento de mundo
+innecesario ni temas sensibles; ofrecer instrucciones idénticas, audio
+único y condiciones uniformes.</p>
+<p><strong>No recomendado para una decisión de promoción:</strong> usar un examen de gramática aislada como único criterio, promediar todo sin mínimos por destreza o calificar writing/speaking sin rúbrica analítica.</p>
+<h1 id="blueprint-general">5. Blueprint general del examen</h1>
+<table>
+<thead>
+<tr><th>Paper</th><th>Duración</th><th>Peso</th><th>Propósito</th></tr>
+</thead>
+<tbody>
+<tr><td>Reading &amp; Writing</td><td>60 min</td><td>50%</td><td>Comprensión lectora, control de lenguaje en contexto y producción escrita breve.</td></tr>
+<tr><td>Listening</td><td>30 min aprox.</td><td>25%</td><td>Comprensión global y de detalle en audios claros.</td></tr>
+<tr><td>Speaking</td><td>8–10 min por pareja</td><td>25%</td><td>Interacción y producción oral sobre temas familiares.</td></tr>
+</tbody>
+</table>
+<h1 id="reading-writing">6. Estructura recomendada de Reading &amp; Writing</h1>
+<p><strong>Parte 1:</strong> avisos, mensajes o letreros con opción múltiple.</p>
+<p><strong>Parte 2:</strong> matching de preguntas con textos cortos.</p>
+<p><strong>Parte 3:</strong> texto breve A2 con preguntas de detalle e idea principal.</p>
+<p><strong>Parte 4:</strong> cloze de vocabulario/gramática en contexto.</p>
+<p><strong>Parte 5:</strong> writing task 1: note/email guiado.</p>
+<p><strong>Parte 6:</strong> writing task 2: mini descripción o historia breve.</p>
+<h1 id="listening-structure">7. Estructura recomendada de Listening</h1>
+<p><strong>Parte 1:</strong> diálogos cortos con imagen u opción múltiple.</p>
+<p><strong>Parte 2:</strong> escucha para detalles específicos.</p>
+<p><strong>Parte 3:</strong> gap fill con información concreta.</p>
+<p><strong>Parte 4:</strong> idea principal o intención del hablante.</p>
+<p><strong>Parte 5:</strong> matching breve.</p>
+<p>Se recomienda reproducir cada audio dos veces.</p>
+<h1 id="speaking-structure">8. Estructura recomendada de Speaking</h1>
+<p><strong>Parte 1:</strong> entrevista personal corta.</p>
+<p><strong>Parte 2:</strong> interacción guiada en pareja o con el evaluador sobre planes, gustos, rutinas, lugares o actividades.</p>
+<p><strong>Parte 3:</strong> mini producción descriptiva opcional si deseas evidencia adicional.</p>
+<h1 id="rubrica-writing">9. Rúbrica analítica de Writing</h1>
+<table>
+<thead>
+<tr><th>Banda</th><th>Content</th><th>Organisation</th><th>Language</th></tr>
+</thead>
+<tbody>
+<tr><td>5</td><td>Cumple plenamente la tarea; informa bien al lector.</td><td>Ideas claras y conectadas con orden lógico.</td><td>Buen control de estructuras simples y vocabulario frecuente.</td></tr>
+<tr><td>4</td><td>Cumple casi toda la tarea con pequeñas omisiones.</td><td>Organización clara con algunos conectores básicos.</td><td>Mayormente correcto; errores no impiden comprensión.</td></tr>
+<tr><td>3</td><td>Cumple lo esencial de la tarea.</td><td>Organización suficiente; secuencia básica.</td><td>Control parcial de lenguaje simple; se entiende.</td></tr>
+<tr><td>2</td><td>Información incompleta.</td><td>Organización limitada.</td><td>Errores frecuentes, pero con significado recuperable.</td></tr>
+<tr><td>1</td><td>Responde mínimamente o fuera de foco.</td><td>Poca organización.</td><td>Gran limitación lingüística.</td></tr>
+<tr><td>0</td><td>No evaluable.</td><td>No evaluable.</td><td>No evaluable.</td></tr>
+</tbody>
+</table>
+<h1 id="rubrica-speaking">10. Rúbrica analítica de Speaking</h1>
+<table>
+<thead>
+<tr><th>Banda</th><th>Grammar &amp; Vocabulary</th><th>Pronunciation</th><th>Interactive Communication</th><th>Global Achievement</th></tr>
+</thead>
+<tbody>
+<tr><td>5</td><td>Usa lenguaje simple apropiado con buen control.</td><td>Mayormente inteligible.</td><td>Mantiene interacción con poca ayuda.</td><td>Desempeño sólido A2.</td></tr>
+<tr><td>4</td><td>Buen rango simple con algunos errores.</td><td>Comprensible casi siempre.</td><td>Participa bien con apoyo mínimo.</td><td>Desempeño adecuado A2.</td></tr>
+<tr><td>3</td><td>Lenguaje simple suficiente.</td><td>Comprensible en general.</td><td>Responde y participa, aunque con pausas.</td><td>Desempeño mínimo funcional A2.</td></tr>
+<tr><td>2</td><td>Muy limitado.</td><td>Inteligibilidad irregular.</td><td>Necesita bastante apoyo.</td><td>Por debajo de A2 estable.</td></tr>
+<tr><td>1</td><td>Muy escaso.</td><td>Difícil de entender.</td><td>Interacción muy dependiente.</td><td>Muy por debajo de A2.</td></tr>
+<tr><td>0</td><td>No evaluable.</td><td>No evaluable.</td><td>No evaluable.</td><td>No evaluable.</td></tr>
+</tbody>
+</table>
+<h1 id="criterios-promocion">11. Criterios de promoción recomendados</h1>
+<table>
+<thead>
+<tr><th>Área</th><th>Mínimo recomendado</th></tr>
+</thead>
+<tbody>
+<tr><td>Total</td><td>70/100</td></tr>
+<tr><td>Reading</td><td>18/30</td></tr>
+<tr><td>Listening</td><td>15/25</td></tr>
+<tr><td>Writing</td><td>Promedio mínimo 3/5 y ningún criterio por debajo de 2</td></tr>
+<tr><td>Speaking</td><td>Promedio mínimo 3/5 y ningún criterio por debajo de 2</td></tr>
+</tbody>
+</table>
+<p>Un alumno no debería promocionar solo por promedio global si una destreza productiva está claramente por debajo del estándar.</p>
+<h1 id="estandarizacion">12. Estandarización y administración</h1>
+<p>Usa tabla de especificaciones, revisión técnica previa, pilotaje corto, condiciones idénticas de aplicación y discusión de muestras ancla para writing y speaking antes de calificar.</p>
+<h1 id="reporte">13. Formato de reporte</h1>
+<p>Reporta el resultado por destreza, no solo con nota global. Ejemplo: Reading 24/30, Writing 15/20, Listening 18/25, Speaking 19/25, Total 76/100. Decisión: Promueve a A2.</p>
+<h1 id="referencias">14. Referencias oficiales</h1>
+<p>[1] Council of Europe. CEFR Descriptors. <a href="https://www.coe.int/en/web/common-european-framework-reference-languages/cefr-descriptors">https://www.coe.int/en/web/common-european-framework-reference-languages/cefr-descriptors</a></p>
+<p>[2] Council of Europe. CEFR Companion Volume. <a href="https://rm.coe.int/common-european-framework-of-reference-for-languages-learning-teaching/16809ea0d4">https://rm.coe.int/common-european-framework-of-reference-for-languages-learning-teaching/16809ea0d4</a></p>
+<p>[3] Council of Europe. Relating Language Examinations to the CEFR. <a href="https://www.coe.int/en/web/common-european-framework-reference-languages/relating-examinations-to-the-cefr">https://www.coe.int/en/web/common-european-framework-reference-languages/relating-examinations-to-the-cefr</a></p>
+<p>[4] Council of Europe. Manual for Language Test Development and Examining. <a href="https://www.coe.int/en/web/common-european-framework-reference-languages/developing-tests-examining">https://www.coe.int/en/web/common-european-framework-reference-languages/developing-tests-examining</a></p>
+<p>[5] Cambridge English. A2 Key for Schools exam format. <a href="https://www.cambridgeenglish.org/latinamerica/exams-and-tests/key-for-schools/exam-format/">https://www.cambridgeenglish.org/latinamerica/exams-and-tests/key-for-schools/exam-format/</a></p>
+<p>[6] Cambridge English. A2 Key for Schools Handbook for teachers. <a href="https://www.cambridgeenglish.org/Images/168174-cambridge-english-key-for-schools-handbook-for-teachers.pdf">https://www.cambridgeenglish.org/Images/168174-cambridge-english-key-for-schools-handbook-for-teachers.pdf</a></p>
+      <div class="footer-note">Archivo generado a partir del documento original en Word para facilitar su uso y compartición en entornos que aceptan HTML.</div>
+    </div>
+  </div>
+</body>
+</html>
