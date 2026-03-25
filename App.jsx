@@ -1,12 +1,20 @@
-import { useState, useCallback, useRef } from "react";
-import { LEVELS, LC, LL, irt, nlpAnalyze, vocabProfile, assess, aiInterpret, loadAll, saveResult, delResult } from "./engines.js";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { LEVELS, LC, LL, WRITING_RUBRIC, SPEAKING_RUBRIC, irt, nlpAnalyze, vocabProfile, scoreWritingEvidence, scoreSpeakingEvidence, assess, aiInterpret, loadAll, saveResult, delResult } from "./engines.js";
 import { QUESTIONS, WRITING_PROMPTS } from "./questions.js";
 import { SPEAK_TASKS, scorePronunciation, SpeechRecorder } from "./speaking.js";
 
 const F = "'DM Sans',sans-serif";
 const F2 = "'Bricolage Grotesque',sans-serif";
 const PIN = "A64admin";
+const TEST_DURATION_MS = 60 * 60 * 1000;
 const sc = v => v >= 55 ? "#10b981" : v >= 40 ? "#eab308" : "#ef4444";
+const fmtTime = ms => {
+  const total = Math.max(0, Math.ceil(ms / 1000));
+  const h = String(Math.floor(total / 3600)).padStart(2, "0");
+  const m = String(Math.floor((total % 3600) / 60)).padStart(2, "0");
+  const s = String(total % 60).padStart(2, "0");
+  return `${h}:${m}:${s}`;
+};
 
 // ═══ Styles ═══
 const CSS = `
@@ -86,15 +94,42 @@ export default function App() {
   const [srch, setSrch] = useState("");
 
   // Speaking state
-  const [spkStep, setSpkStep] = useState(0); // 0,1,2 = read-aloud sentences, 3 = free speech
+  const [spkStep, setSpkStep] = useState(0); // read-aloud items then oral tasks
   const [spkRecording, setSpkRecording] = useState(false);
   const [spkTranscript, setSpkTranscript] = useState("");
   const [spkScores, setSpkScores] = useState([]);
-  const [spkFreeText, setSpkFreeText] = useState("");
+  const [spkInterview, setSpkInterview] = useState("");
+  const [spkProduction, setSpkProduction] = useState("");
+  const [timeLeft, setTimeLeft] = useState(TEST_DURATION_MS);
+  const [testStartedAt, setTestStartedAt] = useState(null);
   const recorderRef = useRef(null);
 
   const nLvl = LEVELS[Math.min(LEVELS.indexOf(cLvl) + 1, 5)];
   const go = useCallback(cb => { setFade(false); setTimeout(() => { cb(); setFade(true); }, 250); }, []);
+
+  useEffect(() => {
+    if (!testStartedAt) return;
+    const tick = () => {
+      const remaining = TEST_DURATION_MS - (Date.now() - testStartedAt);
+      if (remaining <= 0) {
+        setTimeLeft(0);
+        setTestStartedAt(null);
+        alert("El tiempo de la prueba ha terminado. La sesión se cerrará automáticamente.");
+        go(() => { reset(); setView("reg"); });
+        return;
+      }
+      setTimeLeft(remaining);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [testStartedAt, go]);
+
+  const startTimedTest = () => {
+    setTimeLeft(TEST_DURATION_MS);
+    setTestStartedAt(Date.now());
+    go(() => setView("test"));
+  };
 
   // TTS
   const tts = (text, rate) => new Promise(res => {
@@ -134,54 +169,68 @@ export default function App() {
     const result = scorePronunciation(expected, spkTranscript);
     setSpkScores(prev => [...prev, result]);
     setSpkTranscript("");
-    if (spkStep + 1 < Math.min(tasks.read.length, 3)) {
+    if (spkStep + 1 < tasks.read.length) {
       setSpkStep(spkStep + 1);
     } else {
-      setSpkStep(99); // free speech phase
+      setSpkStep(tasks.read.length); // guided oral phase
     }
   };
 
-  const submitSpkFree = () => {
-    setSpkFreeText(spkTranscript);
+  const submitSpkOral = () => {
+    const tasks = SPEAK_TASKS[nLvl] || SPEAK_TASKS[cLvl] || SPEAK_TASKS.A1;
+    if (spkStep === tasks.read.length) {
+      setSpkInterview(spkTranscript);
+      setSpkTranscript("");
+      setSpkStep(tasks.read.length + 1);
+      return;
+    }
+    setSpkProduction(spkTranscript);
     setSpkTranscript("");
-    // Done with speaking, run full assessment
-    runFullAssessment();
+    runFullAssessment(spkInterview || spkTranscript, spkTranscript);
   };
 
-  const runFullAssessment = async () => {
+  const runFullAssessment = async (interviewOverride = spkInterview, productionOverride = spkProduction || spkTranscript) => {
     setBusy(true);
     go(() => setView("loading"));
 
     const gI = irt(resp.g), rI = irt(resp.r), lI = irt(resp.l);
-    const allText = txt + " " + (spkFreeText || spkTranscript);
-    const nlpR = nlpAnalyze(allText), vocR = vocabProfile(allText);
-
-    // Average pronunciation scores
-    const avgPron = spkScores.length > 0
-      ? Math.round(spkScores.reduce((a, s) => a + s.score, 0) / spkScores.length)
-      : 0;
+    const speakingText = [interviewOverride, productionOverride].filter(Boolean).join(" ");
+    const nlpR = nlpAnalyze(txt), vocR = vocabProfile(txt);
 
     const combinedPronData = {
+      pronScore: spkScores.length > 0 ? Math.round(spkScores.reduce((a, s) => a + s.score, 0) / spkScores.length) : 0,
       matchRate: spkScores.length > 0 ? Math.round(spkScores.reduce((a, s) => a + s.matchRate, 0) / spkScores.length) : 0,
       matchedWords: spkScores.reduce((a, s) => a + s.matchedWords, 0),
       totalWords: spkScores.reduce((a, s) => a + s.totalWords, 0),
       wordScores: spkScores.flatMap(s => s.wordScores),
+      interviewWords: interviewOverride.trim().split(/\s+/).filter(Boolean).length,
+      productionWords: productionOverride.trim().split(/\s+/).filter(Boolean).length,
     };
 
-    const a = assess(gI, rI, lI, nlpR, vocR, avgPron, cLvl, nLvl);
-    const analysis = await aiInterpret(a, reg, cLvl, nLvl, txt, combinedPronData);
+    const writingEval = scoreWritingEvidence(txt, nlpR, vocR, cLvl, nLvl);
+    const speakingEval = scoreSpeakingEvidence(speakingText, combinedPronData, cLvl, nLvl);
+    const a = assess(gI, rI, lI, writingEval, speakingEval, cLvl, nLvl);
+    const analysis = await aiInterpret(a, reg, cLvl, nLvl, {
+      writingText: txt,
+      speakingTranscript: speakingText,
+      writingRubric: WRITING_RUBRIC,
+      speakingRubric: SPEAKING_RUBRIC,
+      pronunciation: combinedPronData,
+    });
 
     const rec = {
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
       date: new Date().toISOString(),
       reg: { ...reg }, currentLevel: cLvl, nextLevel: nLvl,
       assessment: a, analysis, transcript: txt,
-      pronunciation: { scores: spkScores, average: avgPron, data: combinedPronData },
-      freeSpeak: spkFreeText || spkTranscript,
+      pronunciation: { scores: spkScores, average: combinedPronData.pronScore, data: combinedPronData },
+      interviewSpeak: interviewOverride,
+      freeSpeak: productionOverride,
     };
     saveResult(rec);
     setResults(rec);
     setBusy(false);
+    setTestStartedAt(null);
     go(() => setView("res"));
   };
 
@@ -200,7 +249,8 @@ export default function App() {
   const reset = () => {
     setQi(0); setResp({ g: [], r: [], l: [] }); setPlayed(false); setTxt("");
     setResults(null); setReg({ pName: "", wa: "", email: "", sName: "", age: "", grade: "" });
-    setCLvl("A1"); setSpkStep(0); setSpkScores([]); setSpkTranscript(""); setSpkFreeText("");
+    setCLvl("A1"); setSpkStep(0); setSpkScores([]); setSpkTranscript(""); setSpkInterview(""); setSpkProduction("");
+    setTimeLeft(TEST_DURATION_MS); setTestStartedAt(null);
   };
 
   // ═══════════════════════════════════════════════
@@ -230,17 +280,11 @@ export default function App() {
             </div>
           </div>
           <div style={{ background: "var(--card)", borderRadius: 16, padding: 20, border: "1px solid var(--brd)", marginBottom: 16 }}>
-            <p style={{ fontSize: 12, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>Nivel Actual del Estudiante</p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 8 }}>
-              {LEVELS.slice(0, 5).map(l => (
-                <button key={l} onClick={() => setCLvl(l)} style={{ padding: "12px 6px", borderRadius: 10, border: cLvl === l ? `2px solid ${LC[l]}` : "2px solid var(--brd)", background: cLvl === l ? LC[l] + "22" : "var(--opt)", cursor: "pointer", textAlign: "center" }}>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: cLvl === l ? LC[l] : "var(--muted)", fontFamily: F2 }}>{l}</div>
-                </button>
-              ))}
-            </div>
+            <p style={{ fontSize: 12, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Instrucciones</p>
+            <p style={{ fontSize: 14, color: "var(--muted)", lineHeight: 1.6, margin: 0 }}>Completa tu registro y presiona comenzar. La prueba tendrá una duración máxima de 1 hora y se cerrará automáticamente cuando el tiempo termine.</p>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "center" }}>
-            <Btn disabled={!ok} onClick={() => go(() => setView("test"))} style={{ width: "100%", maxWidth: 320, padding: "13px 0" }}>Comenzar →</Btn>
+            <Btn disabled={!ok} onClick={startTimedTest} style={{ width: "100%", maxWidth: 320, padding: "13px 0" }}>Comenzar →</Btn>
             <button onClick={() => go(() => { setView("admin"); setAuth(false); setPin(""); setAll(loadAll()); })} style={{ background: "none", border: "none", color: "var(--muted)", fontSize: 11, cursor: "pointer" }}>🔒 Administración</button>
           </div>
         </div>
@@ -249,7 +293,7 @@ export default function App() {
   }
 
   // ═══════════════════════════════════════════════
-  // TEST (30 questions, auto-advance, no feedback)
+  // TEST (objective questions, auto-advance, no feedback)
   // ═══════════════════════════════════════════════
   if (view === "test") {
     const q = QUESTIONS[qi];
@@ -257,6 +301,10 @@ export default function App() {
     return (
       <Wrap fade={fade}>
         <div style={{ maxWidth: 640, margin: "0 auto", animation: "fadeUp 0.2s ease" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 12 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--accent)", letterSpacing: "0.08em", textTransform: "uppercase" }}>Tiempo restante</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: timeLeft <= 5 * 60 * 1000 ? "#ef4444" : "var(--text)", fontFamily: F2 }}>{fmtTime(timeLeft)}</div>
+          </div>
           <div style={{ height: 4, background: "var(--trk)", borderRadius: 2, overflow: "hidden", marginBottom: 20 }}>
             <div style={{ height: "100%", width: `${((qi + 1) / QUESTIONS.length) * 100}%`, background: "linear-gradient(90deg,#3b82f6,#8b5cf6)", borderRadius: 2, transition: "width 0.4s" }} />
           </div>
@@ -302,6 +350,10 @@ export default function App() {
     return (
       <Wrap fade={fade}>
         <div style={{ maxWidth: 640, margin: "0 auto", animation: "fadeUp 0.3s ease" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 12 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--accent)", letterSpacing: "0.08em", textTransform: "uppercase" }}>Tiempo restante</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: timeLeft <= 5 * 60 * 1000 ? "#ef4444" : "var(--text)", fontFamily: F2 }}>{fmtTime(timeLeft)}</div>
+          </div>
           <div style={{ height: 4, background: "var(--trk)", borderRadius: 2, overflow: "hidden", marginBottom: 20 }}>
             <div style={{ height: "100%", width: "90%", background: "linear-gradient(90deg,#3b82f6,#8b5cf6)", borderRadius: 2 }} />
           </div>
@@ -323,42 +375,42 @@ export default function App() {
   }
 
   // ═══════════════════════════════════════════════
-  // SPEAKING (Read Aloud + Free Speech)
+  // SPEAKING (Read Aloud + Guided Oral + Extended Production)
   // ═══════════════════════════════════════════════
   if (view === "speak") {
     const tasks = SPEAK_TASKS[nLvl] || SPEAK_TASKS[cLvl] || SPEAK_TASKS.A1;
-    const isFreeSpeech = spkStep >= 99;
-    const readSentence = !isFreeSpeech ? tasks.read[spkStep] : null;
+    const phase = spkStep < tasks.read.length ? "read" : spkStep === tasks.read.length ? "interview" : "production";
+    const readSentence = phase === "read" ? tasks.read[spkStep] : null;
+    const oralPrompt = phase === "interview" ? tasks.interview : tasks.production;
 
     return (
       <Wrap fade={fade}>
         <div style={{ maxWidth: 640, margin: "0 auto", animation: "fadeUp 0.3s ease" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 12 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--accent)", letterSpacing: "0.08em", textTransform: "uppercase" }}>Tiempo restante</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: timeLeft <= 5 * 60 * 1000 ? "#ef4444" : "var(--text)", fontFamily: F2 }}>{fmtTime(timeLeft)}</div>
+          </div>
           <div style={{ height: 4, background: "var(--trk)", borderRadius: 2, overflow: "hidden", marginBottom: 20 }}>
             <div style={{ height: "100%", width: "95%", background: "linear-gradient(90deg,#3b82f6,#8b5cf6)", borderRadius: 2 }} />
           </div>
 
-          {!isFreeSpeech ? (
+          {phase === "read" ? (
             <>
-              {/* READ ALOUD section */}
               <div style={{ background: "var(--card)", borderRadius: 14, padding: 24, border: "1px solid var(--brd)", marginBottom: 16 }}>
                 <p style={{ fontSize: 12, fontWeight: 600, color: "var(--accent)", textTransform: "uppercase", marginBottom: 12 }}>
-                  Read this sentence aloud ({spkStep + 1}/{Math.min(tasks.read.length, 3)})
+                  Read aloud for intelligibility evidence ({spkStep + 1}/{tasks.read.length})
                 </p>
-
-                {/* Listen button to hear correct pronunciation */}
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
                   <button onClick={() => tts(readSentence, 0.85)} disabled={playing}
                     style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 13, cursor: "pointer" }}>
                     {playing ? "🔊 ..." : "🔊 Listen first"}
                   </button>
                 </div>
-
                 <p style={{ fontSize: 18, fontWeight: 600, color: "var(--text)", lineHeight: 1.6, padding: 16, background: "var(--card2)", borderRadius: 10, textAlign: "center" }}>
                   "{readSentence}"
                 </p>
               </div>
 
-              {/* Recording controls */}
               <div style={{ textAlign: "center", marginBottom: 16 }}>
                 {!spkRecording ? (
                   <Btn v={spkTranscript ? "o" : "g"} onClick={startRecording} style={{ padding: "14px 36px" }}>
@@ -371,11 +423,12 @@ export default function App() {
                 )}
               </div>
 
-              {/* Transcription preview */}
               {spkTranscript && (
                 <div style={{ background: "var(--card)", borderRadius: 12, padding: 16, border: "1px solid var(--brd)", marginBottom: 16 }}>
                   <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 6 }}>What we heard:</p>
-                  <p style={{ fontSize: 15, color: "var(--text)", lineHeight: 1.6, margin: 0 }}>"{spkTranscript}"</p>
+                  <p style={{ fontSize: 15, color: "var(--text)", lineHeight: 1.6, margin: 0 }}>
+                    "{spkTranscript}"
+                  </p>
                 </div>
               )}
 
@@ -385,19 +438,29 @@ export default function App() {
             </>
           ) : (
             <>
-              {/* FREE SPEECH section */}
               <div style={{ background: "var(--card)", borderRadius: 14, padding: 24, border: "1px solid var(--brd)", marginBottom: 16 }}>
                 <p style={{ fontSize: 12, fontWeight: 600, color: "var(--accent)", textTransform: "uppercase", marginBottom: 12 }}>
-                  Now speak freely
+                  {phase === "interview" ? "Guided oral response" : "Extended oral production"}
                 </p>
-                <p style={{ fontSize: 16, fontWeight: 500, color: "var(--text)", lineHeight: 1.6, margin: 0 }}>{tasks.free.prompt}</p>
-                <p style={{ fontSize: 12, color: "var(--muted)", marginTop: 10, fontStyle: "italic", background: "var(--card2)", padding: "6px 10px", borderRadius: 8 }}>💡 {tasks.free.hint}</p>
+                <p style={{ fontSize: 16, fontWeight: 500, color: "var(--text)", lineHeight: 1.6, margin: 0 }}>{oralPrompt.prompt}</p>
+                <p style={{ fontSize: 12, color: "var(--muted)", marginTop: 10, fontStyle: "italic", background: "var(--card2)", padding: "6px 10px", borderRadius: 8 }}>💡 {oralPrompt.hint}</p>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+                <div style={{ background: "var(--card2)", borderRadius: 12, padding: 14 }}>
+                  <p style={{ fontSize: 11, color: "var(--muted)", marginBottom: 6 }}>Interview response</p>
+                  <p style={{ fontSize: 13, color: "var(--text)", margin: 0 }}>{spkInterview || "Pending"}</p>
+                </div>
+                <div style={{ background: "var(--card2)", borderRadius: 12, padding: 14 }}>
+                  <p style={{ fontSize: 11, color: "var(--muted)", marginBottom: 6 }}>Extended response</p>
+                  <p style={{ fontSize: 13, color: "var(--text)", margin: 0 }}>{spkProduction || "Pending"}</p>
+                </div>
               </div>
 
               <div style={{ textAlign: "center", marginBottom: 16 }}>
                 {!spkRecording ? (
                   <Btn v={spkTranscript ? "o" : "g"} onClick={startRecording} style={{ padding: "14px 36px" }}>
-                    {spkTranscript ? "🎙 Record Again" : "🎙 Start Speaking"}
+                    {spkTranscript ? "🎙 Record Again" : phase === "interview" ? "🎙 Start Interview Response" : "🎙 Start Extended Response"}
                   </Btn>
                 ) : (
                   <Btn v="d" onClick={stopRecording} style={{ padding: "14px 36px", animation: "recording 1.5s infinite" }}>
@@ -408,30 +471,20 @@ export default function App() {
 
               {spkTranscript && (
                 <div style={{ background: "var(--card)", borderRadius: 12, padding: 16, border: "1px solid var(--brd)", marginBottom: 16 }}>
-                  <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 6 }}>Your response:</p>
-                  <p style={{ fontSize: 15, color: "var(--text)", lineHeight: 1.6, margin: 0 }}>"{spkTranscript}"</p>
+                  <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 6 }}>Current oral response:</p>
+                  <p style={{ fontSize: 15, color: "var(--text)", lineHeight: 1.6, margin: 0 }}>
+                    "{spkTranscript}"
+                  </p>
                   <p style={{ fontSize: 11, color: "var(--muted)", marginTop: 6 }}>{spkTranscript.split(/\s+/).filter(Boolean).length} words</p>
                 </div>
               )}
 
               {spkTranscript && !spkRecording && (
-                <Btn onClick={submitSpkFree} style={{ width: "100%", padding: "13px 0" }} disabled={busy}>
-                  {busy ? "Processing..." : "Finish Test →"}
+                <Btn onClick={submitSpkOral} style={{ width: "100%", padding: "13px 0" }} disabled={busy}>
+                  {phase === "interview" ? "Continue to extended response →" : busy ? "Processing..." : "Finish Test →"}
                 </Btn>
               )}
             </>
-          )}
-
-          {/* Pronunciation scores so far */}
-          {spkScores.length > 0 && (
-            <div style={{ marginTop: 16, padding: 12, background: "var(--card2)", borderRadius: 10 }}>
-              <p style={{ fontSize: 11, color: "var(--muted)", marginBottom: 6 }}>Pronunciation scores:</p>
-              <div style={{ display: "flex", gap: 8 }}>
-                {spkScores.map((s, i) => (
-                  <span key={i} style={{ fontSize: 13, fontWeight: 700, color: sc(s.score), fontFamily: F2 }}>{s.score}%</span>
-                ))}
-              </div>
-            </div>
           )}
         </div>
       </Wrap>
@@ -446,7 +499,7 @@ export default function App() {
       <div style={{ maxWidth: 400, margin: "80px auto", textAlign: "center", animation: "fadeUp 0.4s ease" }}>
         <div style={{ fontSize: 48, marginBottom: 16, animation: "pulse 1.5s infinite" }}>🤖</div>
         <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--text)", fontFamily: F2, marginBottom: 8 }}>Evaluando...</h2>
-        <p style={{ fontSize: 13, color: "var(--muted)" }}>IRT · NLP · Pronunciación · AI</p>
+        <p style={{ fontSize: 13, color: "var(--muted)" }}>Scoring objetivo · Rúbricas CEFR · AI</p>
       </div>
     </Wrap>
   );
@@ -511,7 +564,7 @@ export default function App() {
     );
   }
 
-  // ═══════════════════════════════════════════════
+  // ══════════════════════════════════════════════
   // ADMIN
   // ═══════════════════════════════════════════════
   if (view === "admin") {
